@@ -360,7 +360,7 @@
   function updateProgress() {
     const count = (finished.audio1 ? 1 : 0) + (finished.audio2 ? 1 : 0);
     listenCount.textContent = count + ' / 2';
-    if (count === 2) {
+    if (count >= 1) {
       formSection.classList.add('visible');
       setTimeout(() => {
         formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
