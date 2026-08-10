@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TELEMO｜営業デモ音声を聞く</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #000;
+      color: #fff;
+      font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    /* Header */
+    .page-title {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .page-title h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .page-title p {
+      font-size: 14px;
+      color: #999;
+    }
+
+    /* Audio Section */
+    .audio-section {
+      margin-bottom: 24px;
+      background: #111;
+      border-radius: 12px;
+      padding: 24px;
+      border: 1px solid #222;
+    }
+    .audio-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .audio-badge {
+      background: #C5A55A;
+      color: #000;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+    .audio-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .audio-desc {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 16px;
+    }
+    .audio-section audio {
+      width: 100%;
+      height: 44px;
+    }
+    .audio-status {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #666;
+    }
+    .audio-status.done {
+      color: #C5A55A;
+    }
+
+    /* Progress indicator */
+    .listen-progress {
+      text-align: center;
+      margin: 32px 0;
+      padding: 20px;
+      background: #111;
+      border-radius: 12px;
+      border: 1px solid #222;
+    }
+    .listen-progress .count {
+      font-size: 32px;
+      font-weight: 700;
+      color: #C5A55A;
+    }
+    .listen-progress .label {
+      font-size: 14px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    /* Form Section */
+    .form-section {
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: opacity 0.6s ease, max-height 0.6s ease;
+    }
+    .form-section.visible {
+      opacity: 1;
+      max-height: 2000px;
+    }
+    .form-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .form-header h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .form-header p {
+      font-size: 14px;
+      color: #999;
+    }
+    .form-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    .form-group.full {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .form-group label .required {
+      background: #DC2626;
+      color: #fff;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-left: 6px;
+      font-weight: 700;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 14px;
+      background: #1A1A1A;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: #555;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: #C5A55A;
+    }
+    .form-group textarea {
+      height: 120px;
+      resize: vertical;
+    }
+    .form-group select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+    .form-group select option {
+      background: #1A1A1A;
+      color: #fff;
+    }
+    .form-note {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+    .submit-btn {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      background: #C5A55A;
+      color: #000;
+      font-size: 17px;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.2s;
+      margin-top: 8px;
+    }
+    .submit-btn:hover {
+      opacity: 0.85;
+    }
+    .submit-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .submit-note {
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+      margin-top: 12px;
+    }
+
+    /* Thanks */
+    .thanks-section {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .thanks-section.visible {
+      display: block;
+    }
+    .thanks-section h2 {
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+    .thanks-section p {
+      font-size: 15px;
+      color: #999;
+    }
+
+    @media (max-width: 480px) {
+      .form-row {
+        flex-direction: column;
+        gap: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Title -->
+  <div class="page-title">
+    <h1>TELEMOの営業、聞いてみてください。</h1>
+    <p>実際の営業デモ音声を2本お聞きいただけます。</p>
+  </div>
+
+  <!-- Audio 1: toB -->
+  <div class="audio-section">
+    <div class="audio-label">
+      <span class="audio-badge">toB</span>
+      <span class="audio-title">法人向け｜回線デモ</span>
+    </div>
+    <p class="audio-desc">法人回線の営業トーク例</p>
+    <audio id="audio1" controls preload="metadata">
+      <source src="audio/toB_demo.m4a" type="audio/mp4">
+    </audio>
+    <div class="audio-status" id="status1">未再生</div>
+  </div>
+
+  <!-- Audio 2: toC -->
+  <div class="audio-section">
+    <div class="audio-label">
+      <span class="audio-badge">toC</span>
+      <span class="audio-title">個人向け｜ウォーターサーバーデモ</span>
+    </div>
+    <p class="audio-desc">個人向けウォーターサーバーの営業トーク例</p>
+    <audio id="audio2" controls preload="metadata">
+      <source src="audio/toC_demo.m4a" type="audio/mp4">
+    </audio>
+    <div class="audio-status" id="status2">未再生</div>
+  </div>
+
+  <!-- Progress -->
+  <div class="listen-progress">
+    <div class="count" id="listenCount">0 / 2</div>
+    <div class="label">音声を聞き終えるとフォームが表示されます</div>
+  </div>
+
+  <!-- Contact Form (hidden until both audios finish) -->
+  <div class="form-section" id="formSection">
+    <div class="form-header">
+      <h2>無料相談する</h2>
+      <p>以下をご記入ください。担当者より折り返しご連絡いたします。</p>
+    </div>
+
+    <form id="contactForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label>会社名<span class="required">必須</span></label>
+          <input type="text" name="company" placeholder="株式会社〇〇" required>
+        </div>
+        <div class="form-group">
+          <label>お名前<span class="required">必須</span></label>
+          <input type="text" name="name" placeholder="山田 太郎" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>メールアドレス<span class="required">必須</span></label>
+          <input type="email" name="email" placeholder="example@company.co.jp" required>
+        </div>
+        <div class="form-group">
+          <label>電話番号<span class="required">必須</span></label>
+          <input type="tel" name="phone" placeholder="090-1234-5678" required>
+          <div class="form-note">※ ご担当者様の電話番号で構いません（携帯番号OK）</div>
+        </div>
+      </div>
+
+      <div class="form-group full">
+        <label>お問い合わせ種別</label>
+        <select name="type">
+          <option value="無料相談">無料相談</option>
+          <option value="資料請求">資料請求</option>
+          <option value="デモ依頼">デモ依頼</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+
+      <div class="form-group full">
+        <label>お問い合わせ内容</label>
+        <textarea name="message" placeholder="ご質問やご要望があればご記入ください"></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">無料相談する</button>
+      <div class="submit-note">※ 強引な営業は一切いたしません</div>
+    </form>
+  </div>
+
+  <!-- Thanks -->
+  <div class="thanks-section" id="thanksSection">
+    <h2>お問い合わせありがとうございます</h2>
+    <p>担当者より2営業日以内にご連絡いたします。</p>
+  </div>
+</div>
+
+<script>
+  const audio1 = document.getElementById('audio1');
+  const audio2 = document.getElementById('audio2');
+  const status1 = document.getElementById('status1');
+  const status2 = document.getElementById('status2');
+  const listenCount = document.getElementById('listenCount');
+  const formSection = document.getElementById('formSection');
+
+  let finished = { audio1: false, audio2: false };
+
+  function updateProgress() {
+    const count = (finished.audio1 ? 1 : 0) + (finished.audio2 ? 1 : 0);
+    listenCount.textContent = count + ' / 2';
+    if (count === 2) {
+      formSection.classList.add('visible');
+      setTimeout(() => {
+        formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
+  }
+
+  audio1.addEventListener('playing', () => { status1.textContent = '再生中...'; status1.className = 'audio-status'; });
+  audio2.addEventListener('playing', () => { status2.textContent = '再生中...'; status2.className = 'audio-status'; });
+
+  audio1.addEventListener('ended', () => {
+    finished.audio1 = true;
+    status1.textContent = '再生完了 ✓';
+    status1.className = 'audio-status done';
+    updateProgress();
+  });
+  audio2.addEventListener('ended', () => {
+    finished.audio2 = true;
+    status2.textContent = '再生完了 ✓';
+    status2.className = 'audio-status done';
+    updateProgress();
+  });
+
+  // Form submission
+  const GAS_URL = '%%GAS_URL%%'; // Google Apps Script URL をここに設定
+
+  document.getElementById('contactForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = '送信中...';
+
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    data.timestamp = new Date().toLocaleString('ja-JP');
+    data.source = 'telemo-lp-v2';
+
+    try {
+      if (GAS_URL && GAS_URL !== '%%GAS_URL%%') {
+        await fetch(GAS_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      }
+      document.getElementById('contactForm').style.display = 'none';
+      document.querySelector('.form-header').style.display = 'none';
+      document.getElementById('thanksSection').classList.add('visible');
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = '無料相談する';
+    }
+  });
+</script>
+
+</body>
+</html>
